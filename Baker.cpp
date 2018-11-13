@@ -6,6 +6,7 @@
 #include "../includes/externs.h"
 #include "../includes/PRINT.h"
 #include "../includes/logger.h"
+#include <vector>
 using namespace std;
 
 Baker::Baker(int id):id(id)
@@ -23,16 +24,17 @@ void Baker::bake_and_box(ORDER &anOrder) {
 	int num_dons = anOrder.number_donuts;
 	//create new box
 	Box box = Box();
+	Box box2 = Box();
 	//add donuts
-	for(int i = 0; i < num_dons; i++){
-		DONUT temp_don = DONUT();
-		bool added_donut = box.addDonut(temp_don);
-		if(!added_donut){
-			anOrder.boxes.push_back(box);
-			box.clear();
-			box.addDonut(temp_don);
+		for(int i = 0; i < num_dons; i++){
+			DONUT temp_don = DONUT();
+			bool added_donut = box.addDonut(temp_don);
+			if(added_donut == false){
+				anOrder.boxes.push_back(box);
+				box2.addDonut(temp_don);
+				anOrder.boxes.push_back(box2);
+			}
 		}
-	}
 	anOrder.boxes.push_back(box);
 	
 }
@@ -49,7 +51,6 @@ void Baker::bake_and_box(ORDER &anOrder) {
 void Baker::beBaker() {
 	unique_lock<mutex> locker(mutex_order_inQ);
 	//baker is waiting for waiter
-	std::cout<<"baker"<<id<<"is waiting to be notified"<<endl;
 	//check if watier is finished
 	//then see if orders are in queue
 	while((b_WaiterIsFinished == false)){
@@ -64,9 +65,6 @@ void Baker::beBaker() {
 	bake_and_box(temp);
 	order_out_Vector.push_back(temp);
 	order_in_Q.pop();
-
-	//finish baking
-	std::cout<<"Baker:"<< id << "finished baking, exiting thread"<< endl;
 	
 	//unlock mutex
 	mutex_order_outQ.unlock();
