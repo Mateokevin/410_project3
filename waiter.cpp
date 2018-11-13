@@ -17,20 +17,18 @@ Waiter::~Waiter()
 
 //gets next Order(s) from file_IO
 int Waiter::getNext(ORDER &anOrder){
-	return myIO.getNext(anOrder);
+  return myIO.getNext(anOrder);
 }
 
 void Waiter::beWaiter() {
     ORDER order;
+    b_WaiterIsFinished = false;
 
     lock_guard<mutex> lock(mutex_order_inQ);
 
     while(getNext(order) == SUCCESS)
         order_in_Q.push(order);
 
-
     b_WaiterIsFinished = true;
     cv_order_inQ.notify_all();
-
 }
-
